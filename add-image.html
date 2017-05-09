@@ -179,8 +179,85 @@
         <input type="file" id="SignatureImageFile" name="SignatureImageFile" onchange="Upload('SignatureImage', this)" accept="image/x-png,image/gif,image/jpeg" />
     </div>
 </div>
+
+<!-- 增删照片 -->
+<h5>增删照片</h5>
+
+<div class="img-editable" id="ImgUrl">
+    <a href="javascript:void(0)" class="upload-img" id="Img_Add">
+        <label for="File"><i class="glyphicon glyphicon-plus"></i></label>
+    </a>
+    <input type="file" name="File" id="File" onchange="UploadImg();" accept="image/x-png,image/gif,image/jpeg" />
+</div>
 <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
 <script>
+    $(function () {
+        initData();
+    });
+    //加载信息
+    function initData() {
+        var data = {Img_Url:"/img.jpg,/img1.jpg"};
+        if (data) {
+            if (data.Img_Url) {
+                var fileurl = data.Img_Url.split(',');
+                for (var i = 0; i < fileurl.length; i++) {
+                    $("#Img_Add").before('<div class="img-block"><img src="/Files/' + fileurl[i] + '" /><a onclick="DelFile(this,\'' + fileurl[i] + '\',1)"><i class="glyphicon glyphicon-remove"></i></a></div>');
+                }
+            }
+        }
+    }
+
+    //上传
+    function UploadImg() {
+        var fileUrl = $.trim($("#File").val());
+        if (fileUrl == "") {
+            return;
+        }
+
+        var fName = fileUrl.substring(fileUrl.lastIndexOf("\\") + 1, fileUrl.length);
+        var ext = fName.substring(fName.lastIndexOf("."), fName.length).toLowerCase();
+        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif") {
+            alert("请选择图片文件（限jpg,gif,png格式）！");
+            $("#File").val('');
+            return;
+        }
+        var result = ["ok","2.jpg"];
+        if (result[0] == "ok") {
+            //imgUrl.push(result[1]);
+            $("#Img_Add").before('<div class="img-block"><img src="/Files/' + result[1] + '" /><a onclick="DelFile(this,\'' + result[1] + '\',0)"><i class="icon-dc-close"></i></a></div>');
+            //alert("文件上传成功,保存后生效");
+        } else {
+            alert("操作出错，" + result[1]);
+        }
+    }
+
+    //删除照片
+    function DelFile($this, url, way) {
+        confirm("确认需要删除文件，删除后不可恢复！", function() {
+            if (way == 0) {
+                var index = $.inArray(url, imgUrl);
+                if (index >= 0) {
+                    imgUrl.splice(index, 1);
+                    alert("文件已删除");
+                    $this.parentElement.remove();
+                }
+            } else {
+                $.post("", { type: "DelFile", Code: code, ImgUrl: url }, function(msg) {
+                    if (msg.message > 0) {
+                        alert("文件已删除");
+                        $this.parentElement.remove();
+                    } else {
+                        alert(msg.message);
+                    }
+                });
+            }
+        });
+    };
+
+    //多图片的删除
+    $(".img-editable").on("click", ".img-block a", function () {
+        $(this).parent().remove();
+    });
 
     //上传图片
     function Upload(field, $this) {
