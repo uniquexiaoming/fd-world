@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加图片并预览</title>
+    <link type="text/css" rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <style>
+
+        /* 图片上传及实时预览 */
+        .img-zone {
+            position: relative;
+            height: 180px;
+            margin-bottom: 15px;
+        }
+
+        .img-zone > img {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=image);
+        }
+
+        .img-large {
+            width: 320px;
+            height: 180px;
+        }
+
+        .img-medium {
+            width: 140px;
+            height: 185px;
+        }
+
+        .img-small {
+            width: 140px;
+            height: 50px;
+        }
+
+        .img-large .upload-img .glyphicon-plus,
+        .img-medium .upload-img .glyphicon-plus {
+            display: block;
+            margin: 38px auto 18px;
+            font-size: 50px;
+        }
+
+        .img-large .upload-img span,
+        .img-medium .upload-img span,
+        .img-small .upload-img span {
+            font-size: 16px;
+        }
+
+        a.upload-img {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed #CCC;
+            background: rgba(59,120,185,.8);
+            color: #FFF;
+            -webkit-transition: .2s;
+            -moz-transition: .2s;
+            -o-transition: .2s;
+            transition: .2s;
+        }
+
+        .img-zone:hover a.upload-img{
+            display: inline-block;
+        }
+
+        a.upload-img label {
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .img-zone input[type=file],
+        .img-editable input[type=file] {
+            width: 0;
+            filter: alpha(opacity=0);
+            -webkit-opacity: 0;
+            -moz-opacity: 0;
+            opacity: 0;
+        }
+
+        .img-editable .img-block {
+            position: relative;
+            float: left;
+            margin: 10px 10px 0 0;
+            -webkit-transition: .3s;
+            -moz-transition: .3s;
+            -o-transition: .3s;
+            transition: .3s;
+            overflow: hidden;
+        }
+
+        .img-editable .img-block img {
+            width: 60px;
+            height: 60px;
+            border: 0;
+            filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=image);
+        }
+
+        .img-editable .img-block a {
+            display: none;
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            color: #FFF;
+            background: rgba(51, 51, 51, .5) no-repeat;
+            cursor: pointer;
+        }
+
+        .img-editable .img-block:hover a {
+            display: inline-block;
+            color: #F00;
+        }
+
+        .img-editable a.upload-img {
+            display: inline-block;
+            position: relative;
+            left: initial;
+            width: 60px;
+            height: 60px;
+            margin: 10px 10px 0 0;
+            border-style: solid;
+            background: #FFF;
+            color: #CCC;
+            text-decoration: none;
+        }
+
+        .img-editable a.upload-img:hover {
+            background-color: #E7E7E7;
+        }
+
+        .img-editable a.upload-img label {
+            font-size: 24px;
+        }
+
+    </style>
+</head>
+<body>
+<!-- 机构图片 -->
+<h5>机构图片</h5>
+<div class="org-box">
+    <div class="img-zone img-large" id="OrgImageZone">
+        <img src="../../../images/org.jpg" alt="默认图片" id="OrgImage" />
+        <a class="upload-img" href="javascript:void(0)" title="请上传16：9的图片，建议大小不要超过200K">
+            <label for="OrgImageFile"><i class="glyphicon glyphicon-plus"></i><span>上传图片</span></label>
+        </a>
+        <input type="file" id="OrgImageFile" name="OrgImageFile" onchange="Upload('OrgImage', this)" accept="image/x-png,image/gif,image/jpeg" />
+    </div>
+</div>
+<!-- 人员照片 -->
+<h5>人员照片</h5>
+<div class="person-box">
+    <div class="img-zone img-medium" id="PersonImageZone">
+        <img src="../../../images/personal.jpg" alt="默认图片" id="PersonImage" />
+        <a class="upload-img" href="javascript:void(0)" title="请上传一寸照，建议大小不要超过200K">
+            <label for="PersonImageFile"><i class="glyphicon glyphicon-plus"></i><span>上传照片</span></label>
+        </a>
+        <input type="file" id="PersonImageFile" name="PersonImageFile" onchange="Upload('PersonImage', this)" accept="image/x-png,image/gif,image/jpeg" />
+    </div>
+</div>
+<!-- 签名照片 -->
+<h5>签名照片</h5>
+<div class="signature-box">
+    <div class="img-zone img-small" id="SignatureImageZone">
+        <img src="../../../images/signature.jpg" alt="默认图片" id="SignatureImage" />
+        <a class="upload-img" href="javascript:void(0)" title="请上传签名，建议大小不要超过150K">
+            <label for="SignatureImageFile"><span><i class="glyphicon glyphicon-pencil"></i>上传签名</span></label>
+        </a>
+        <input type="file" id="SignatureImageFile" name="SignatureImageFile" onchange="Upload('SignatureImage', this)" accept="image/x-png,image/gif,image/jpeg" />
+    </div>
+</div>
+
+<!-- 增删照片 -->
+<h5>增删照片</h5>
+
+<div class="img-editable" id="ImgUrl">
+    <a href="javascript:void(0)" class="upload-img" id="Img_Add">
+        <label for="File"><i class="glyphicon glyphicon-plus"></i></label>
+    </a>
+    <input type="file" name="File" id="File" onchange="UploadImg();" accept="image/x-png,image/gif,image/jpeg" />
+</div>
+<script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+    $(function () {
+        initData();
+    });
+    //加载信息
+    function initData() {
+        var data = {Img_Url:"/img.jpg,/img1.jpg"};
+        if (data) {
+            if (data.Img_Url) {
+                var fileurl = data.Img_Url.split(',');
+                for (var i = 0; i < fileurl.length; i++) {
+                    $("#Img_Add").before('<div class="img-block"><img src="/Files/' + fileurl[i] + '" /><a onclick="DelFile(this,\'' + fileurl[i] + '\',1)"><i class="glyphicon glyphicon-remove"></i></a></div>');
+                }
+            }
+        }
+    }
+
+    //上传
+    function UploadImg() {
+        var fileUrl = $.trim($("#File").val());
+        if (fileUrl == "") {
+            return;
+        }
+
+        var fName = fileUrl.substring(fileUrl.lastIndexOf("\\") + 1, fileUrl.length);
+        var ext = fName.substring(fName.lastIndexOf("."), fName.length).toLowerCase();
+        if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif") {
+            alert("请选择图片文件（限jpg,gif,png格式）！");
+            $("#File").val('');
+            return;
+        }
+        var result = ["ok","2.jpg"];
+        if (result[0] == "ok") {
+            //imgUrl.push(result[1]);
+            $("#Img_Add").before('<div class="img-block"><img src="/Files/' + result[1] + '" /><a onclick="DelFile(this,\'' + result[1] + '\',0)"><i class="icon-dc-close"></i></a></div>');
+            //alert("文件上传成功,保存后生效");
+        } else {
+            alert("操作出错，" + result[1]);
+        }
+    }
+
+    //删除照片
+    function DelFile($this, url, way) {
+        confirm("确认需要删除文件，删除后不可恢复！", function() {
+            if (way == 0) {
+                var index = $.inArray(url, imgUrl);
+                if (index >= 0) {
+                    imgUrl.splice(index, 1);
+                    alert("文件已删除");
+                    $this.parentElement.remove();
+                }
+            } else {
+                $.post("", { type: "DelFile", Code: code, ImgUrl: url }, function(msg) {
+                    if (msg.message > 0) {
+                        alert("文件已删除");
+                        $this.parentElement.remove();
+                    } else {
+                        alert(msg.message);
+                    }
+                });
+            }
+        });
+    };
+
+    //多图片的删除
+    $(".img-editable").on("click", ".img-block a", function () {
+        $(this).parent().remove();
+    });
+
+    //上传图片
+    function Upload(field, $this) {
+        var fileElementId = field + "File";
+
+        var fileUrl = $.trim($("#" + fileElementId).val());
+        if (fileUrl == "") {
+            return;
+        }
+        var fName = fileUrl.substring(fileUrl.lastIndexOf("\\") + 1, fileUrl.length);
+        var ext = fName.substring(fName.lastIndexOf("."), fName.length).toLowerCase();
+        if (fileElementId == "OrgImageFile") { //预览机构图片
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif") {
+                alert("请选择图片文件（限jpg,gif,png格式）！");
+                $("#OrgImageFile").val('');
+                return;
+            }
+            previewImage($this, 320, 180);
+        }
+        else if (fileElementId == "PersonImageFile") { //预览人员图片
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif") {
+                alert("请选择图片文件（限jpg,gif,png格式）！");
+                $("#PersonImageFile").val('');
+                return;
+            }
+            previewImage($this, 140, 185);
+        } else if (fileElementId == "SignatureImageFile") { //预览签名
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif") {
+                alert("请选择图片文件（限jpg,gif,png格式）！");
+                $("#SignatureImageFile").val('');
+                return;
+            }
+            previewImage($this, 140, 50);
+        }
+
+    }
+
+    //图片上传预览，IE是用了滤镜
+    function previewImage(file, maxWidth, maxHeight) {
+        var MAXWIDTH = maxWidth ? maxWidth : 100;
+        var MAXHEIGHT = maxHeight ? maxHeight : 100;
+        var cparent = $(file).parent(".img-zone");
+        var img = document.createElement("img");
+
+        if (file.files && file.files[0]) {
+            img.onload = function () {
+                cparent.children("img").attr("src", img.src);
+            };
+            var reader = new FileReader();
+            reader.onload = function (evt) { img.src = evt.target.result; };
+            reader.readAsDataURL(file.files[0]);
+        }
+        else {//兼容IE
+            var sFilter = 'filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src="';
+            file.select();
+            var src = document.selection.createRange().text;
+            img.filters.item('DXImageTransform.Microsoft.AlphaImageLoader').src = src;
+        }
+    }
+
+
+    //多图片上传预览
+    function previewMulti(file) {
+        var MAXWIDTH = 60;
+        var MAXHEIGHT = 60;
+        var cparent = $(file).parent(".img-editable");
+        var ccontent = $("<div class='img-block'></div>");
+        var btn = cparent.find(".upload-img");
+        ccontent.insertBefore(btn);
+        var img = document.createElement("img");;
+        ccontent.append(img);
+        var aa = document.createElement("a");
+        var ii = document.createElement("i");
+        ii.setAttribute('class', 'icon-dc-close');
+        aa.append(ii);
+        ccontent.append(aa);
+
+        if (file.files && file.files[0]) {
+            img.onload = function () {
+                var rect = clacImgZoomParam(MAXWIDTH, MAXHEIGHT, img.offsetWidth, img.offsetHeight);
+                img.width = rect.width;
+                img.height = rect.height;
+                //img.style.marginLeft = rect.left+'px';
+                img.style.marginTop = rect.top + 'px';
+            };
+            var reader = new FileReader();
+            reader.onload = function (evt) { img.src = evt.target.result; };
+            reader.readAsDataURL(file.files[0]);
+        }
+        else {//兼容IE
+            var sFilter = 'filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod=scale,src="';
+            file.select();
+            var src = document.selection.createRange().text;
+            img.filters.item('DXImageTransform.Microsoft.AlphaImageLoader').src = src;
+            var rect = clacImgZoomParam(MAXWIDTH, MAXHEIGHT, img.offsetWidth, img.offsetHeight);
+            status = ('rect:' + rect.top + ',' + rect.left + ',' + rect.width + ',' + rect.height);
+            ccontent.innerHTML = "<div class='img-block' style='width:" + rect.width + "px;height:" + rect.height + "px;margin-top:" + rect.top + "px;" + sFilter + src + "\"'></div>";
+        }
+    }
+
+    //计算图片缩小后位置
+    function clacImgZoomParam(maxWidth, maxHeight, width, height) {
+        var param = { top: 0, left: 0, width: width, height: height };
+        if (width > maxWidth || height > maxHeight) {
+            var rateWidth = width / maxWidth;
+            var rateHeight = height / maxHeight;
+
+            if (rateWidth > rateHeight) {
+                param.width = maxWidth;
+                param.height = Math.round(height / rateWidth);
+            } else {
+                param.width = Math.round(width / rateHeight);
+                param.height = maxHeight;
+            }
+        }
+
+        param.left = Math.round((maxWidth - param.width) / 2);
+        param.top = Math.round((maxHeight - param.height) / 2);
+        return param;
+    }
+</script>
+</body>
+</html>
