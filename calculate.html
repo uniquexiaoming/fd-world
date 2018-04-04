@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>calculate</title>
+    <style>
+        .calculator {
+            width: 326px;
+            height: 460px;
+            margin: 10px auto;
+            background-color: #368590;
+            border-radius: 5px;
+            box-shadow: 0 2px 15px black;
+            overflow: hidden;//防止显示屏的阴影设置和整体计算器的阴影设置叠加
+        }
+        .calculator .c_screen {
+            position: relative;
+            width: 326px;
+            height: 110px;
+            background-color: #96a4c2;
+            border-radius: 5px;
+            box-shadow: inherit;//继承了父级的盒阴影属性
+        }
+        .calculator .c_screen>p {
+            position: absolute;
+            top: 50%;
+            margin-top: -28px;
+            width: 236px;
+            text-align: center;
+            word-break: break-all;
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px 45px;
+        }
+        .calculator .c_row {
+            margin: 0 23px;
+        }
+        button {
+            cursor: pointer;
+            width: 60px;
+            height: 45px;
+            margin: 20px 2px 0;
+            border: 0px;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #2b2f5b;
+            outline: none;
+        }
+        button::selection {
+            color: #fff;//消除浏览器默认行为,手动设置颜色为白色就不会有选中文本的行为
+        }
+        button:active {
+            box-shadow: 0 0 5px 5px dodgerblue;//点击按钮高亮显示
+        }
+        .c_func_btn {
+            background: linear-gradient(to bottom, rgba(252,156,23,1) 0%, rgba(247,126,27,1) 100%);
+        }
+    </style>
+</head>
+<body>
+    <h3>简易计算器<a href="https://blog.csdn.net/q1056843325/article/details/53398803">改编自CSDN</a></h3>
+    <div class="calculator">
+        <div class="c_screen">
+            <p></p>
+        </div>
+        <div class="c_btn_wrapper">
+            <div class="c_row">
+                <button class="c_func_btn">(</button>
+                <button class="c_func_btn">)</button>
+                <button class="c_func_btn">CE</button>
+                <button class="c_func_btn">AC</button>
+            </div>
+            <div class="c_row">
+                <button>7</button>
+                <button>8</button>
+                <button>9</button>
+                <button class="c_func_btn">/</button>
+            </div>
+            <div class="c_row">
+                <button>4</button>
+                <button>5</button>
+                <button>6</button>
+                <button class="c_func_btn">x</button>
+            </div>
+            <div class="c_row">
+                <button>1</button>
+                <button>2</button>
+                <button>3</button>
+                <button class="c_func_btn">-</button>
+            </div>
+            <div class="c_row">
+                <button>0</button>
+                <button>.</button>
+                <button class="c_func_btn">=</button>
+                <button class="c_func_btn">+</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        var btn_wrap = document.getElementsByClassName('c_btn_wrapper')[0], // 按钮容器
+            content = document.getElementsByTagName('p')[0], // 显示器内容
+            count = 0, //记录显示屏上字符及数字个数
+            bOneDec = false; //表示显示屏一个数字中是否已经有一个小数点的状态
+        btn_wrap.onclick = function(e){//事件委托 
+            var target = e.target;
+            if(target.nodeName.toLowerCase() === 'button'){//这个判断表示只有当我的节点是button标签才做进一步判断
+                var btnType = target.innerText;//这个局部变量通过我button标签的内容判断了按钮类型
+                if(content.innerText == 'Math Error' && btnType != 'AC'){//如果我的显示屏显示了“Math Error”并且我点击的按钮不是AC归零键，那么直接返回，不响应
+                    return;
+                }
+                if(btnType == 'AC'){//AC键是重置的按键
+                    bOneDec = false;//对于小数点的布尔变量赋予假值
+                    content.innerText = '0';//设置屏幕内容为0
+                    count = 1;//计数器重置为1
+                }else if(btnType == 'CE'){//CE键是回撤键
+                    if(content.innerText != ''){//首先最重要的判断是我们的显示器必须有内容
+                        if(content.innerText.length === 1){//如果显示器中只有一个数字，那么就直接变成0
+                            content.innerText = '0';
+                        }else{//通过字符串的slice原型方法来回删最后一个数字或符号
+                            content.innerText = content.innerText.slice(0,-1);
+                        }
+                        count--;//不要忘了计数器-1
+                    }
+                }else if(btnType == '='){
+                    var text = content.innerText;// 先把屏幕内容缓存下来
+                    if(!text){//屏幕上什么也没有，那就直接返回
+                        return;
+                    }else{
+                        text = text.replace(/x/g,'*');//如果屏幕中有x那么替换成我们用的*
+                        var result;//缓存计算结果
+                        try{
+                            result = eval(text) + '';//计算结果转换为字符串
+                            if(result.search(/\./) > 0){//判断结果中是否有小数点
+                                bOneDec = true; //初始化小数点判断布尔变量
+                                if(result.split('.')[1].length > 5){//如果结果中有小数点并且小数点后超过五位那么结果只保留五位小数
+                                    result = (+result).toFixed(5);
+                                }
+                            }
+                            content.innerText = result;//屏幕上要显示我们结果
+                            count = result.length;//修改计数器的值
+                        }catch(e){
+                            content.innerText = 'Math Error';//如果计算报错了，那么在屏幕上显示错误信息
+                        }
+                    }
+                }else{
+                    if(isNaN(+btnType) && btnType != '.'){//如果点击的不是数字键也不是小数点，那么小数点判断的锁要打开
+                        bOneDec = false;
+                    }
+                    if(btnType == '.'){//小数点判断
+                        if(bOneDec){//既然当前数字中已经有小数点了，就不能重复添加，计算器不响应
+                            return;
+                        }
+                        bOneDec = true;//表示当前数字已经有小数点了
+                    }
+                    if(content.innerText == '0' && (!isNaN(+btnType) ||
+                    btnType == '(' || btnType == ')')){//如果屏幕上是0，而我们正要按数字键或者是括号，那么先把屏幕上的0去掉
+                        content.innerText = '';
+                    }
+                    content.innerText += btnType;//按什么屏幕上就多显示什么
+                    if(count++ >= 44){//计数器最后用在了这里，如果字符太多了，弹出警告
+                        alert('输入的字符过多');
+                    }
+                }   
+            }
+        }
+    </script>
+</body>
+</html>
