@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="keywords" content="音乐播放器, Uniquexiaoming"/>
+<title>Music Player</title>
+<style>
+    html, body, div, span, applet, object, iframe,
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    b, u, i, center,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td,
+    article, aside, canvas, details, embed, 
+    figure, figcaption, footer, header, hgroup, 
+    menu, nav, output, ruby, section, summary,
+    time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+    }
+    /* HTML5 display-role reset for older browsers */
+    article, aside, details, figcaption, figure, 
+    footer, header, hgroup, menu, nav, section {
+        display: block;
+    }
+    body {
+        line-height: 1;
+    }
+    ol, ul {
+        list-style: none;
+    }
+    blockquote, q {
+        quotes: none;
+    }
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+        content: '';
+        content: none;
+    }
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+    html,
+    body {
+      height: 100%;
+    }
+    body {
+      background-color: #111111;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center;
+      color: #fff;
+      font: 14px "微软雅黑";
+    }
+    .hide {
+      display: none;
+    }
+    .player {
+      width: 375px;
+      height: 550px;
+      background-color: #2b2b2b;
+      border-radius: 10px;
+      position: relative;
+    }
+    .player .header {
+      padding: 15px 0;
+      text-align: center;
+    }
+    .player .albumPic {
+      background-size: cover;
+      width: 270px;
+      height: 270px;
+      margin: auto;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .player .lyric {
+      width: 100%;
+      height: 270px;
+      text-align: center;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    .player .lyric .lyricContent {
+      transition: transform 0.3s linear;
+      transform: translateY(0px);
+    }
+    .player .lyric .lyricContent .active {
+      color: #a6e22d;
+      font-size: 16px;
+      background: rgba(205, 205, 205, 0.2);
+    }
+    .player .trackInfo {
+      text-align: center;
+      padding: 20px 0 15px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    .player .trackInfo .name {
+      font-size: 24px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .player .progress {
+      width: 0;
+      height: 20%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0), #0099ff);
+      background-image: linear-gradient(top, rgba(255, 255, 255, 0), #0099ff);
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      opacity: .4;
+    }
+    .player .controls {
+      position: relative;
+    }
+    .player .controls svg {
+      color: #fff;
+      fill: currentColor;
+    }
+    .player .controls .play {
+      cursor: pointer;
+      width: 75px;
+      height: 75px;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+      margin: auto;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
+          -ms-flex-pack: center;
+              justify-content: center;
+      color: #fff;
+      font-size: 35px;
+    }
+    .player .controls .icon-pause .hide {
+      display: inherit;
+    }
+    .player .controls .icon-pause .pause {
+      display: none;
+    }
+    .player .controls .play:hover {
+      font-size: 40px;
+    }
+    .player .controls .previous {
+      cursor: pointer;
+      position: absolute;
+      top: 25px;
+      font-size: 30px;
+      left: 60px;
+    }
+    .player .controls .previous:hover {
+      font-size: 32px;
+    }
+    .player .controls .next {
+      cursor: pointer;
+      position: absolute;
+      top: 25px;
+      font-size: 30px;
+      right: 60px;
+    }
+    .player .controls .next:hover {
+      font-size: 32px;
+    }
+    .player .time {
+      width: 335px;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      position: absolute;
+      bottom: 0;
+      padding: 20px;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
+          -ms-flex-align: center;
+              align-items: center;
+      -webkit-box-pack: justify;
+      -webkit-justify-content: space-between;
+          -ms-flex-pack: justify;
+              justify-content: space-between;
+    }
+</style>
+<script src="https://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<!-- 页面背景 -->
+<body>
+    <!-- 播放器容器 -->
+    <div class="player">
+
+        <!-- 播放器名称 -->
+        <div class="header">Player</div>
+
+        <!-- 音乐专辑图 -->
+        <div class="albumPic"></div>
+
+        <!-- 歌词 -->
+        <div class="lyric hide">
+            <div class="lyricContent"></div>
+        </div>
+
+        <!-- 音乐信息  -->
+        <div class="trackInfo">
+
+            <!-- 歌曲名 -->
+            <div class="name"></div>
+
+            <!-- 歌手 -->
+            <div class="artist"></div>
+
+            <!-- 专辑名 -->
+            <div class="album"></div>
+
+        </div>
+
+        <!-- 播放进度条 -->
+        <div class="progress"></div>
+
+        <!-- 控制区  -->
+        <div class="controls">
+
+            <!-- 播放 -->
+            <div class="play">
+                <svg class="hide" version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 17 16" enable-background="new 0 0 17 16" xml:space="preserve" width="48px" height="48px">
+                    <g>
+                        <path d="M6.113,15.495 C5.531,16.076 4.01,16.395 4.01,14.494 L4.01,1.506 C4.01,-0.333 5.531,-0.076 6.113,0.506 L12.557,6.948 C13.137,7.529 13.137,8.47 12.557,9.052 L6.113,15.495 L6.113,15.495 Z"/>
+                    </g>
+                </svg>
+                <svg class="pause" version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 17 16" enable-background="new 0 0 17 16" xml:space="preserve" width="48px" height="48px">
+                    <g>
+                        <path d="M0.002,1 C0.002,0.447 0.446,0 0.995,0 L4.967,0 C5.516,0 5.96,0.447 5.96,1 L5.96,15 C5.96,15.553 5.516,16 4.967,16 L0.995,16 C0.446,16 0.002,15.553 0.002,15 L0.002,1 L0.002,1 Z"/>
+                        <path d="M8.002,1 C8.002,0.447 8.446,0 8.995,0 L12.967,0 C13.516,0 13.96,0.447 13.96,1 L13.96,15 C13.96,15.553 13.516,16 12.967,16 L8.995,16 C8.446,16 8.002,15.553 8.002,15 L8.002,1 L8.002,1 Z"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- 上一曲 -->
+            <div class="previous">
+                <svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 17 16" enable-background="new 0 0 17 16" xml:space="preserve" width="48px" height="48px">
+                    <g>
+                        <path d="M0.446,9.052 C-0.134,8.471 -0.134,7.53 0.446,6.948 L6.89,0.506 C7.471,-0.076 8.993,-0.333 8.993,1.506 L8.993,14.494 C8.993,16.395 7.472,16.076 6.89,15.495 L0.446,9.052 L0.446,9.052 Z"/>
+                        <path d="M7.446,9.052 C6.866,8.471 6.866,7.53 7.446,6.948 L13.89,0.506 C14.471,-0.076 15.993,-0.333 15.993,1.506 L15.993,14.494 C15.993,16.395 14.472,16.076 13.89,15.495 L7.446,9.052 L7.446,9.052 Z"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- 下一曲 -->
+            <div class="next">
+                <svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 17 16" enable-background="new 0 0 17 16" xml:space="preserve" width="48px" height="48px">
+                    <g>
+                        <path d="M9.113,15.495 C8.531,16.076 7.01,16.395 7.01,14.494 L7.01,1.506 C7.01,-0.333 8.531,-0.076 9.113,0.506 L15.557,6.948 C16.137,7.529 16.137,8.47 15.557,9.052 L9.113,15.495 L9.113,15.495 Z"/>
+                        <path d="M2.113,15.495 C1.531,16.076 0.01,16.395 0.01,14.494 L0.01,1.506 C0.01,-0.333 1.531,-0.076 2.113,0.506 L8.557,6.948 C9.137,7.529 9.137,8.47 8.557,9.052 L2.113,15.495 L2.113,15.495 Z"/>
+                    </g>
+                </svg>
+            </div>
+
+        </div>      
+
+        <!-- 播放时间  -->
+        <div class="time">
+
+            <!-- 当前时间 -->
+            <div class="current"></div>
+
+            <!-- 歌曲总时间 -->
+            <div class="total"></div>
+
+        </div>
+
+        <!-- 音频控件 -->
+        <audio id="audio"><source src=""></audio>
+    </div>
+    <script>
+    //因为做静态页有跨域问题，所以就直接把数据拿出来赋值给`playlist`这个对象上，下面只保留了需要用到的数据对象
+    var playlist = {
+        "result": {
+            "tracks": [
+                {
+                    "name": "岁月神偷",
+                    "artists": [
+                        {
+                            "name": "金玟岐"
+                        }
+                    ],
+                    "album": {
+                        "name": "Blank",
+                        "picUrl":"images/logo.png"
+                    },
+                    "duration": 162000,
+                    "mp3Url": "resource/岁月神偷.mp3",
+                    "lrcUrl": "resource/cc.lrc"
+                },
+                {
+                    "name": "Fade",
+                    "artists": [
+                        {
+                            "name": "Alan Walker"
+                        }
+                    ],
+                    "album": {
+                        "name": "Fade",
+                        "picUrl":"images/logo.png"
+                    },
+                    "duration": 33000,
+                    "mp3Url": "resource/Fade.mp3",
+                    "lrcUrl": "resource/cc.lrc"
+                },
+                {
+                    "name": "See you again",
+                    "artists": [
+                        {
+                            "name": "..."
+                        }
+                    ],
+                    "album": {
+                        "name": "seeyouagain",
+                        "picUrl":"images/logo.png"
+                    },
+                    "duration": 42000,
+                    "mp3Url": "resource/seeyouagain.mp3",
+                    "lrcUrl": "resource/cc.lrc"
+                }
+            ]
+        }
+    };
+    $().ready(function(){
+        //当前播放器状态
+        var playStatus = {
+            currentTrackLen: playlist.result.tracks.length,
+            currentTrackIndex: 0,
+            currentTime: 0,
+            currentTotalTime: 0,
+            playStatus: true,
+        };
+
+        //播放器控制方法
+        var playerControls = {
+            //歌曲基本信息
+            trackInfo: function(args){
+                var obj = playlist.result.tracks[playStatus.currentTrackIndex];
+
+                args = args || {
+                    name:obj.name,
+                    artist:obj.artists[0].name,
+                    album:obj.album.name,
+                    albumPic:obj.album.picUrl + '?param=270y270',
+                    total:obj.duration,
+                    src: obj.mp3Url,
+                    lrc: obj.lrcUrl
+                };
+
+                $('.player .trackInfo .name').text(args.name);
+                $('.player .trackInfo .artist').text(args.artist);
+                $('.player .trackInfo .album').text(args.album);   
+                $('.player .albumPic').css('background','url(' + args.albumPic + ')');         
+                $('.player .time .total').text(timeConvert(args.total / 1000));
+                playStatus.currentTotalTime = Math.floor(args.total / 1000);
+                $('#audio source').attr('src',args.src);
+                $('#audio')[0].volume = 0.1;
+                $('#audio')[0].loop = true;
+                console.log(args.lrc);
+                lyric = parseLyric("[ti:0]\n[ar:0]\n[al:0]\n[offset:0]\n[00:00.00]岁月神偷 - 金玟岐\n[00:10.99]演唱：金玟岐\n[00:14.25]\n[00:20.16]能够握紧的就别放了\n[00:24.30]能够拥抱的就别拉扯\n[00:28.508]时间着急的 冲刷着\n[00:32.67]剩下了什么\n[00:36.543]原谅走过的那些曲折\n[00:40.539]原来留下的都是真的\n[00:45.48]纵然似梦啊 半醒着\n[00:48.532]笑着哭着都快活\n[00:53.86]谁让\n[00:55.554]时间是让人猝不及防的东西\n[00:59.552]晴时有风阴有时雨\n[01:03.000]争不过朝夕 又念着往昔\n[01:08.000]偷走了青丝却留住一个你\n[01:11.000]岁月是一场有去无回的旅行\n[01:15.000]好的坏的都是风景\n[01:19.000]别怪我贪心 只是不愿醒\n[01:24.000]因为你只为你愿和我一起\n[01:28.000]看云淡风轻\n[01:43.000]时间是让人猝不及防的东西\n[01:47.552]晴时有风阴有时雨\n[01:52.000]争不过朝夕 又念着往昔\n[01:55.000]偷走了青丝却留住一个你\n[01:59.000]岁月是一场有去无回的旅行\n[02:03.000]好的坏的都是风景\n[02:07.000]别怪我贪心 只是不愿醒\n[02:11.000]因为你只为你愿和我一起\n[02:16.000]看云淡风轻\n[02:42.000]");
+                var lyricContent = $('.player .lyric .lyricContent');
+                for(i in lyric){
+                    lyricContent.append('<p name="lyric" id=' + i + '>' + lyric[i][1] + '</p>');
+                }
+                // $.get(args.lrc, function(lrc) {
+                //     lyric = parseLyric(lrc);
+                //     var lyricContent = $('.player .lyric .lyricContent');
+                //     for(i in lyric){
+                //         lyricContent.append('<p name="lyric" id=' + i + '>' + lyric[i][1] + '</p>');
+                //     }
+                // });
+            },
+
+            //播放、暂停状态处理
+            playStatus: function(){
+                $('.player .controls .play').attr('class', 'play icon-' + (playStatus.playStatus?'pause':'play'));
+
+                if(playStatus.playStatus){
+                    $('#audio')[0].play();
+                }else{
+                    $('#audio')[0].pause();
+                }
+            },
+
+            //当前时间、进度、歌词处理
+            playTime: function(){
+                $('.player .time .current').text(timeConvert(playStatus.currentTime));
+                $('.player .progress').css('width', playStatus.currentTime / playStatus.currentTotalTime * 100 + '%');
+                for (var i = 0;i < lyric.length; i++) {
+                    if (playStatus.currentTime > lyric[i][0] - 1) {
+                        $('p[name=lyric]').removeClass('active'); 
+                        $('p#'+i).addClass('active');
+
+                        if(i > 7 && i < lyric.length - 7){
+                            $('.lyricContent').attr('style', 'transform:translateY(' + ( - 21 * (i - 7)) + 'px)');
+                        }
+                    };
+                };
+            }
+
+        };
+
+        var timeConvert = function(timestamp){
+            var minutes = Math.floor(timestamp / 60);
+            var seconds = Math.floor(timestamp - (minutes * 60));
+
+            if(seconds < 10) {
+              seconds = '0' + seconds;
+            }
+
+            timestamp = minutes + ':' + seconds;
+            return timestamp;
+        };
+
+        //解析歌词
+        var parseLyric = function(lyric){
+            var lines = lyric.split('\n'),
+                pattern = /\[\d{2}:\d{2}.\d{2}\]/g,
+                result = [];
+            while (!pattern.test(lines[0])) {
+                lines = lines.slice(1);
+            };
+            lines[lines.length - 1].length === 0 && lines.pop();
+            for (data in lines){
+                var index = lines[data].indexOf(']');
+                var time = lines[data].substring(0, index+1),
+                    value = lines[data].substring(index+1);
+                var timeString = time.substring(1, time.length-2);
+                var timeArr = timeString.split(':');
+                result.push([parseInt(timeArr[0], 10) * 60 + parseFloat(timeArr[1]), value]);
+            }
+            result.sort(function(a, b) {
+                return a[0] - b[0];
+            });
+            return result;
+        };
+
+        var lyric = [];
+
+        (function(){
+            playerControls.trackInfo();     
+            playerControls.playStatus();
+
+            $('.player .albumPic, .player .lyric').click(function(){
+                $('.player .albumPic').toggleClass("hide");
+                $('.player .lyric').toggleClass("hide");
+            });
+            $('.player .controls .play').click(function(){
+                playStatus.playStatus = !playStatus.playStatus; 
+                playerControls.playStatus();
+            });
+
+            $('.player .controls .previous').click(function(){
+                if(playStatus.currentTrackIndex - 1 < 0){
+                    console.log('已经没有上一首了');
+                }else{
+                    playStatus.currentTrackIndex --;
+                }
+
+                $('#audio').remove();
+                $('.player').append('<audio id="audio"><source src=""></audio>');
+                playerControls.trackInfo();
+                playerControls.playStatus();
+            });
+
+            $('.player .controls .next').click(function(){
+                if(playStatus.currentTrackIndex + 1 >= playStatus.currentTrackLen){
+                    console.log('已经没有下一首了');
+                }else{
+                    playStatus.currentTrackIndex ++;
+                }
+
+                $('#audio').remove();
+                $('.player').append('<audio id="audio"><source src=""></audio>');          
+                playerControls.trackInfo();
+                playerControls.playStatus();
+            });
+
+            setInterval(function(){
+                playStatus.currentTime = $('#audio')[0].currentTime;           
+                playerControls.playTime();
+
+                if(playStatus.currentTime >= playStatus.currentTotalTime){
+                    $('.player .controls .next').click();
+                }
+            }, 300);
+        })();
+
+    });
+    </script>
+</body>
+</html>
