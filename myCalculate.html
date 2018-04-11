@@ -146,6 +146,7 @@
     </style>
 </head>
 <body>
+    <h3>简易计算器（限制数字最大为8位，表达式限制最大为24位，计算结果保留6位小数）</h3>
     <div class="calculator">
         <div class="screen">
             <p id="content"></p>
@@ -184,31 +185,46 @@
             </div>
         </div>
     </div>
+    <p>Question:99999999*99999999=9999999800000000?结果比预期小1</p>
     <script>
         // Question:99999999*99999999=9999999800000000?比预期小1
         var btn_wrap = document.getElementsByClassName('btn_wrapper')[0], // 按钮容器
             content = document.getElementById('content'), // 显示器内容 表达式
             result = document.getElementById("result"), // 显示器结果 当前数字
             count = 0, //记录显示屏上字符及数字个数
-            lastBtn = "0"; //记录上一次按键值
+            lastBtn = ""; //记录上一次按键值
+        var codeValue = {//键盘按键的keyCode对应的值：48-57为主键盘上的数字键，96-105为数字小键盘的数字键;需要按下Shift键的符号键暂不支持
+            48:"0",49:"1",50:"2",51:"3",52:"4",53:"5",54:"6",55:"7",56:"8",57:"9",
+            96:"0",97:"1",98:"2",99:"3",100:"4",101:"5",102:"6",103:"7",104:"8",105:"9",
+            106:"*",107:"+",109:"-",110:".",111:"/",13:"=",
+            187:"=",189:"-",46:"AC",8:"CE"
+        }
         document.onkeydown = function(event) {
-            if (13 === event.keyCode) {
-                console.log("sca");
+            if(result.innerText == 'Math Error'){//如果显示屏显示了“Math Error”那么直接返回
+                return;
             }
-            console.log(event.keyCode);
+            if (codeValue[event.keyCode]) {
+                var e = {
+                    target:{
+                        nodeName:"button",
+                        innerText:codeValue[event.keyCode]
+                    }
+                };
+                btn_wrap.onclick(e);
+            }
         };
         btn_wrap.onclick = function(e){//事件委托 
             var target = e.target;
             if(target.nodeName.toLowerCase() === 'button'){//当节点是button标签才做进一步判断
                 var btnType = target.innerText;//这个局部变量通过button标签的内容判断了按钮类型
-                if(content.innerText == 'Math Error' && btnType != 'AC'){//如果显示屏显示了“Math Error”并且点击的按钮不是AC归零键，那么直接返回，不响应
+                if(result.innerText == 'Math Error' && btnType != 'AC'){//如果显示屏显示了“Math Error”并且点击的按钮不是AC归零键，那么直接返回，不响应
                     return;
                 }
                 if(btnType == 'AC'){//AC键是重置的按键
                     content.innerText = '';//设置屏幕内容为空
                     result.innerText = '0';//设置屏幕result为0
                     count = 1;//设置计数器为1
-                    lastBtn = "0";
+                    lastBtn = "";
                 }else if(btnType == 'CE'){//CE键是回撤键
                     if(result.innerText != ''){//首先最重要的判断是我们的显示器必须有内容
                         if(lastBtn == "=" || result.innerText.length === 1){//计算后按回撤键则把result置为0；如果result中只有一个数字就直接变成0
@@ -216,8 +232,8 @@
                         }else{//通过字符串的slice原型方法来回删最后一个数字或符号
                             result.innerText = result.innerText.slice(0,-1);
                         }
-                        //count--;//不要忘了计数器-1
-                        lastBtn = "0";
+                        count--;//不要忘了计数器-1
+                        lastBtn = "";
                     }
                 }else if(btnType == '='){
                     if(lastBtn.match(/[=(.*/+-]/g)) {//上一个按键是. ( 运算符，点击=则不响应
@@ -230,8 +246,8 @@
                         try{
                             result.innerText = eval(content.innerText) + '';//计算结果转换为字符串
                             if(result.innerText.search(/\./) > 0){//判断结果中是否有小数点
-                                if(result.innerText.split('.')[1].length > 5){//如果结果中有小数点并且小数点后超过五位那么结果只保留五位小数
-                                    result.innerText = (+result.innerText).toFixed(5).replace(/[0]*$/, "");//解决bug 0.3-0.2=0.09999999999999998
+                                if(result.innerText.split('.')[1].length > 6){//如果结果中有小数点并且小数点后超过六位那么结果只保留六位小数
+                                    result.innerText = (+result.innerText).toFixed(6).replace(/[0]*$/, "");//解决bug 0.3-0.2=0.09999999999999998
                                 }
                             }
                             //content.innerText = result;//屏幕上要显示我们结果
@@ -253,14 +269,17 @@
                     } else {
                         result.innerText += btnType;
                     }
+                    count++;
                     lastBtn = btnType;
                 }else if(btnType.match(/[\(\)*/+-]/g)) {//括号和加减乘除 PS:正则表达式中*/一定要在+-前
-                    if(lastBtn.match(/[*/+-]/g)) {//上一个按键是运算符，则替换之
+                    if(lastBtn.match(/[*/+-]/g) && btnType.match(/[*/+-]/g)) {//上一个按键是运算符，则替换之
                         lastBtn = btnType;
                         content.innerText = content.innerText.replace(/[*/+-]$/g, btnType);
                         return;
                     }
                     if(lastBtn == ".") {//上一个按键是小数点，点击括号或运算符则不响应
+                        return;
+                    } else if(lastBtn != "" && !isNaN(+lastBtn) && btnType == '(') {//上一个按键是数字，如果点击的是左括号则不响应
                         return;
                     } else if(lastBtn == ")" && btnType == '(') {//上一个按键是右括号，如果点击的是左括号则不响应
                         return;
@@ -268,33 +287,45 @@
                         //上一个按键是左括号，如果点击的是运算符或右括号则不响应
                         return;
                     } else if(lastBtn == "=" && result.innerText != ""){
-                        if(btnType == '('){//计算出结果后继续按括号则清空屏幕
+                        if(btnType == ')'){//计算出结果按右括号不响应
+                            return;
+                        } else if(btnType == '(' || btnType == ')'){//计算出结果按左括号则清空屏幕
                             content.innerText = '(';
                             result.innerText = '';
+                            count = 0;//设置计数器为0
+                            lastBtn = btnType;
                             return;
                         } else {//计算出结果后继续按运算符则保留计算结果继续
                             content.innerText = result.innerText;
                             result.innerText = '';
+                            count = content.innerText.length;//设置计数器
                         }
                     }
-                    if(btnType == '(' && content.innerText == "" && result.innerText=="0") {//result为0，点击括号清空result
+                    if(btnType == '(' && content.innerText == "") {//content为空，点击括号清空result
                         content.innerText = '(';
                         result.innerText = '';
+                        return;
+                    }
+                    if(btnType == ')' && content.innerText.match(/\(/) == null) {//表达式中没有左括号就不能添加右括号
                         return;
                     }
                     if(!content.innerText.match(/[\d]/g) && !result.innerText.match(/[\d]/g) && btnType.match(/[\)*/+-]/g)){//数字判断:表达式中没有数字就不能添加运算符和右括号
                         return;
                     }
-                    if(btnType == ")" && (!content.innerText || (content.innerText.match(/\)/) && content.innerText.match(/\(/g).length <= content.innerText.match(/\)/g).length))){//左括号数大于右括号数时才可以继续，否则不响应
-                        return;
+                    if(btnType == ")" && content.innerText.match(/\)/)){//左括号数大于右括号数时才可以继续，否则不响应
+                        if(content.innerText.match(/\(/g).length <= content.innerText.match(/\)/g).length){
+                            return;
+                        }
                     }
                     content.innerText += result.innerText + btnType;//把表达式存入content
                     result.innerText = "";
+                    count++;
                     lastBtn = btnType;
                 }else{
                     if(lastBtn == "="){
                         content.innerText = '';//计算出结果后继续按数字键则清空；否则保留计算结果继续
                         result.innerText = '';
+                        count = 0;
                     }
                     if(result.innerText.length >= 8){//如果当前数超过8位则不响应
                         return;
@@ -304,7 +335,7 @@
                         result.innerText = '';
                     }
                     result.innerText += btnType;//在当前数字中添加
-                    if(count++ >= 44){//计数器最后用在了这里，如果字符太多了，弹出警告
+                    if(count++ >= 24){//计数器用在这里，如果字符太多了，弹出警告
                         alert('输入的字符过多');
                     }
                 }   
