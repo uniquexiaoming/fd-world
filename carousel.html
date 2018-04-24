@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CSS3 transform实现图片旋转木马3D浏览效果</title>
+</head>
+<style>
+    /*http://www.zhangxinxu.com/wordpress/2012/09/css3-3d-transform-perspective-animate-transition/*/
+    .stage {/*搭建舞台，加个视距 perspective: 800px;*/
+        position: relative;
+        width: 1000px;
+        height: 120px;
+        margin: 0 auto;
+        padding: 100px 50px;
+        background: hsla(   0, 100%, 50%, 0.3 );
+        perspective: 800px;
+        /*perspective-origin: 50%;*/
+    }
+    .stage .wrap {/*添加容器，加个3D视图声明*/
+        position: absolute;
+        left: 50%;
+        width: 180px;
+        height: 120px;
+        margin-left: -90px;
+        -webkit-transition: -webkit-transform 1s;
+        -moz-transition: -moz-transform 1s;
+        transition: transform 1s;
+        transform-style: preserve-3d;
+        animation-name: fly;
+        animation-duration: 12s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+    }
+    .piece {
+        position: absolute;
+        width: 180px;
+        bottom: 0;
+        backface-visibility: visible;
+        box-shadow: 0 1px 3px rgba(0,0,0,.5);
+        -webkit-transition: opacity 1s, -webkit-transform 1s;
+        -moz-transition: opacity 1s, -moz-transform 1s;
+        transition: opacity 1s, transform 1s;
+    }
+    /*//translateZ的理想值（该值可以让所有图片无缝围成一个圆）！
+    //r = （div的一半宽度）/ Math.tan(角度 / 180 * Math.PI)   此处 r = 100 / Math.tan(30 / 180 * Math.PI) = 173 */
+    .stage .wrap img:nth-child(1) {
+        background: hsla(   0, 100%, 50%, 0.7 );
+        transform: rotateY(0deg) translateZ(193px);
+    }
+    .stage .wrap img:nth-child(2) {
+        background: hsla(  60, 100%, 50%, 0.7 );
+        transform: rotateY(60deg) translateZ(193px);
+    }
+    .stage .wrap img:nth-child(3) {
+        background: hsla( 120, 100%, 50%, 0.7 );
+        transform: rotateY(120deg) translateZ(193px);
+    }
+    .stage .wrap img:nth-child(4) {
+        background: hsla( 180, 100%, 50%, 0.7 );
+        transform: rotateY(180deg) translateZ(193px);
+    }
+    .stage .wrap img:nth-child(5) {
+        background: hsla( 240, 100%, 50%, 0.7 );
+        transform: rotateY(240deg) translateZ(193px);
+    }
+    .stage .wrap img:nth-child(6) {
+        background: hsla( 300, 100%, 50%, 0.7 );
+        transform: rotateY(300deg) translateZ(193px);
+    }
+    @keyframes fly {
+      0% { 
+        transform: rotateY(   0deg ); 
+        }
+      100% {
+        transform: rotateY( 360deg ); 
+      }
+    }
+  
+</style>
+<body>
+<div class="stage" id="stage">
+    <div class="wrap" id="container">
+    </div>
+</div>
+<script>
+(function() {
+    if (typeof window.screenX === "number") {
+        // 随机颜色HSL
+        var randomHsl = function() {
+            return "hsla(" + Math.round(360 * Math.random()) + "," + "60%, 50%, .75)";
+        }
+        // CSS transform变换应用
+        , transform = function(element, value, key) {
+            key = key || "Transform";
+            ["Moz", "O", "Ms", "Webkit", ""].forEach(function(prefix) {
+                element.style[prefix + key] = value;    
+            }); 
+            
+            return element;
+        }
+        // 浏览器选择器API
+        , $ = function(selector) {
+            return document.querySelector(selector);
+        }, $$ = function(selector) {
+            return document.querySelectorAll(selector);
+        };
+        
+        // 显示图片
+        var htmlPic = '', arrayPic = [1, 8, 3, 4, 6, 7], rotate = 360 / arrayPic.length;
+        
+        arrayPic.forEach(function(i) {
+            //htmlPic = htmlPic + '<img id="piece'+ i +'" src="http://image.zhangxinxu.com/image/study/s/s128/mm'+ i +'.jpg" class="piece" />';  
+            htmlPic = htmlPic + '<img id="piece'+ i +'" src="./resource/cloud.png" class="piece" />';   
+        });
+            
+        // 元素
+        var eleStage = $("#stage"), eleContainer = $("#container"), indexPiece = 0;
+        // 元素
+        var elePics = $$(".piece"), transZ = 90 / Math.tan((rotate / 2 / 180) * Math.PI);
+        
+        eleContainer.innerHTML = htmlPic;
+        eleContainer.addEventListener("click", function() {
+            transform(this, "rotateY("+ (-1 * rotate * ++indexPiece) +"deg)");  
+        });
+        
+        arrayPic.forEach(function(i, j) {
+            transform($("#piece" + i), "rotateY("+ j * rotate +"deg) translateZ("+ (transZ + 20) +"px)");   
+        }); 
+    } else {
+        alert("浏览器不支持！"); 
+    }
+})();
+</script>
+</body>
+</html>
