@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link href="css/style.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="content">
+        <div class="fade-content">
+            <section class="container" id="intro">
+                <div class="info intro">
+                    <p><span class="semibold_italic">Clothing is the carrier of our thoughts. Design is the way we discover the future.</span></p>
+                    <a class="intro-link" href="look.html" alt="LOOK">LOOK</a>
+                    <a class="intro-link" href="news.html" alt="NEWS">NEWS</a>
+                    <a class="intro-link" href="about.html" alt="ABOUT">ABOUT</a>
+                </div>
+                <a class="more-arrow hide" href="#one" alt="More">
+                  <svg class="arrow"><path class="a1" d="M0 0 L12 12 L24 0"></path></svg>
+                </a>
+            </section>
+        </div>
+    </div>
+<script>
+(function() {
+    var $ = function(selector) {
+        return document.querySelector(selector);
+    }, $$ = function(selector) {
+        return document.querySelectorAll(selector);
+    };
+    document.getElementsByClassName("fade-content")[0].setAttribute("style", "opacity:1");
+})();
+</script>
+</body>
+</html>
